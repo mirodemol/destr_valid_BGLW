@@ -1,18 +1,16 @@
 #### 
 # This code is to analyse the 2018 field data from destructive harvests
 # written by Miro
-
+####
 remove(list=ls())
 
 # load packages and functions ----
     delete.na <- function(DF, n=0) {
-      DF[rowSums(is.na(DF)) <= n,]
-    }
-
+      DF[rowSums(is.na(DF)) <= n,]}
 
 
 # read data, check data ----
-  setwd('C:/Users/midemol/Dropbox/Doctoraat/fun_in_R')
+  setwd('C:/Users/midemol/Dropbox/Doctoraat/fun_in_R/destr_valid_BGLW')
   inventory = read.csv('inventory_BRA_LAU_WUU_GAL.csv')
   str(inventory)
   # clean up inventory
@@ -43,31 +41,38 @@ remove(list=ls())
 
     plot(Tree_height_felled_.m.,Tree_height_felled_flb_.m.,col=site_code,pch=c(0,1,2,3)[site_code],pty='s')
     
+# relations between fresh mass and dbh/h
     #pdf("C:/Users/midemol/Dropbox/Doctoraat/fun_in_R/figures/DBH2TH_biomass.pdf",4,4)
         par(mar = c(4, 4, 1, 0.2))
     plot(Tree_height_felled_.m.,Crown_weight_.kg. + Stem_weight_.kg.,col=site_code,pch=c(0,1,2,3)[site_code],pty='s',xlab = 'Total tree length (m)',ylab = 'Tree total fresh mass (kg)')
     plot(DBH,Crown_weight_.kg. + Stem_weight_.kg.,col=site_code,pch=c(0,1,2,3)[site_code],pty='s',xlab = 'DBH (cm)',ylab = 'Tree total fresh mass (kg)')
-    with(inventory,plot(DBH^2*Tree_height_felled_.m.,Crown_weight_.kg. + Stem_weight_.kg.,xlab=expression(~ DBH^{2} ~ x~Tree ~length ~ (cm^{2} ~ m)),ylab='Tree total fresh mass (kg)',col=site_code,pch=c(0,1,2,3)[site_code]))
     
-    legend('topleft',title='Site',c("BRA","GAL","LAU","WUU"), 
-           col=seq_along(levels(factor(site_code))), pch=c(0,1,2,3),bty='n', cex=.75)
+    with(inventory,plot(DBH^2*Tree_height_felled_.m.,Crown_weight_.kg. + Stem_weight_.kg.,xlab=expression(~ DBH^{2} ~ x~Tree ~length ~ (cm^{2} ~ m)),ylab='Tree total fresh mass (kg)',col=site_code,pch=c(0,1,2,3)[site_code]))
+        #abline(lm(Crown_weight_.kg. + Stem_weight_.kg.~I(DBH^2*Tree_height_felled_.m.)+0,data=inventory))
+        for(i in c(1:4)){
+          lm_temp=lm(Crown_weight_.kg. + Stem_weight_.kg.~I(DBH^2*Tree_height_felled_.m.)+0,data=inventory[inventory$site_code==c("BRA","GAL","LAU","WUU")[i],])
+          abline(lm_temp,col=i)}
+          legend('topleft',title='Site',c("BRA (.995)","GAL (.991)","LAU (.983)","WUU (.987)"), 
+          col=seq_along(levels(factor(site_code))), pch=c(0,1,2,3),bty='n', cex=.75)
+    
     dev.off
   detach(inventory) 
-    # standing vs felled ----
+# standing vs felled ----
     #pdf("C:/Users/midemol/Dropbox/Doctoraat/fun_in_R/figures/DBH_DBH.pdf",4,4)
     #pdf("C:/Users/midemol/Dropbox/Doctoraat/fun_in_R/figures/TH_TH.pdf",4,4)
     #pdf("C:/Users/midemol/Dropbox/Doctoraat/fun_in_R/figures/THflb_THflb.pdf",4,4)
     
     
-    par(mar = c(4, 4, 1, 1))
-    with(inventory,plot(Circumference_standing_.cm.,Circumference_standing_.cm.-Circ_felled_.cm.,xlab='Circumference of standing tree (cm)',ylab='Difference (standing - felled, cm)',col=site_code,pch=c(0,1,2,3)[site_code]))
+    par(mar = c(4, 3, 1, 0))
+    with(inventory,plot(Circumference_standing_.cm.,Circumference_standing_.cm.-Circ_felled_.cm., xlab='Circumference of standing tree (cm)',ylab='Difference (standing - felled, cm)',col=site_code,pch=c(0,1,2,3)[site_code]))
         abline(h = 0, lty = 2)
-    with(inventory,plot(Tree_height_.m.,Tree_height_.m.- Tree_height_felled_.m.,xlab='Forestry Pro tree height (m)',ylab='Difference (Forestry Pro - felled, m)',col=site_code,pch=c(0,1,2,3)[site_code]))
+    with(inventory,plot(Tree_height_.m.,Tree_height_.m.- Tree_height_felled_.m.,ylim=c(-4,4),xlab='Forestry Pro tree height (m)',ylab='Difference (Forestry Pro - felled, m)',col=site_code,pch=c(0,1,2,3)[site_code]))
         abline(h = 0, lty = 2)    
-    with(inventory,plot(Tree_height_flb_.m.,Tree_height_flb_.m.- Tree_height_felled_flb_.m.,xlab='Forestry Pro tree height till first living branch (m)',ylab='Difference (Forestry Pro - felled, m)',col=site_code,pch=c(0,1,2,3)[site_code]))
+    with(inventory,plot(Tree_height_flb_.m.,Tree_height_flb_.m.- Tree_height_felled_flb_.m.,ylim=c(-4,4),xlab='Forestry Pro tree height till first living branch (m)',ylab='Difference (Forestry Pro - felled, m)',col=site_code,pch=c(0,1,2,3)[site_code]))
         abline(h = 0, lty = 2)
     dev.off()    
-    
+    legend('topleft',title='Site',c("BRA","GAL","LAU","WUU"), 
+           col=seq_along(levels(factor(site_code))), pch=c(0,1,2,3),bty='n', cex=.75)
     
     # wood cores and wood density ----
     with(inventory,plot(DBH,WSG_cores,xlab='DBH (cm)',ylab='WSG cores',col=site_code,pch=c(0,1,2,3)[site_code]))
@@ -88,11 +93,7 @@ remove(list=ls())
     boxplot(Crown_weight_.kg. ~ site_code, data = inventory)
     boxplot(Crown_weight_.kg. + Stem_weight_.kg.~ site_code, data = inventory,ylab='Tree total fresh mass (kg)')
     dev.off()
-  # linear regressions  
-    m <- lm(log(Crown_weight_.kg. + Stem_weight_.kg.)~I(log(DBH)),data=inventory)
-      #plot(m,which=1:2)
-      
-    
+
       
     # WD and water content at different heights ----
       #make a dataframe "discs" with columns (height, site code, fresh mass and volume and dry mass)
